@@ -161,7 +161,7 @@ public class Controller extends PrimaryStageAware implements Initializable {
             currentModImageView.setImage(new Image(new ByteArrayInputStream(currentModBundle.getImage())));
             currentModNameLabel.setText(currentModBundle.getName());
             currentModNameLabel.setStyle("");
-            currentModInfoLabel.setText("Version " + currentModBundle.getVersion() + "\n" + "by" + currentModBundle.getAuthor());
+            currentModInfoLabel.setText("Version " + currentModBundle.getVersion() + "\n" + "by " + currentModBundle.getAuthor());
             unloadCurrentButton.setDisable(false);
         }
     }
