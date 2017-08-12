@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane fx:id="bundleCell" prefHeight="64.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.timoschwarzer.hkmodinstaller.controller.BundleListCellController">
+   <children>
+      <ImageView fx:id="modImageView" fitHeight="64.0" fitWidth="64.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+      <Label fx:id="modNameLabel" layoutX="73.0" layoutY="13.0" text="My Mod" textFill="WHITE">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Label fx:id="modInfoLabel" layoutX="73.0" layoutY="34.0" text="1.0.8a - by 753" textFill="WHITE" />
+   </children>
+</AnchorPane>
