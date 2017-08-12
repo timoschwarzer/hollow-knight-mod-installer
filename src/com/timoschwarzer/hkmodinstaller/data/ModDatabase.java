@@ -75,11 +75,16 @@ public class ModDatabase {
         boolean currentBundleAvailable = currentBundleId == null;
 
         for (File bundleFile : bundleFiles) {
-            ModBundle bundle = new ModBundle(bundleFile.getAbsolutePath());
-            loadedBundles.put(bundle.getId(), bundle);
+            try {
+                ModBundle bundle = new ModBundle(bundleFile.getAbsolutePath());
+                loadedBundles.put(bundle.getId(), bundle);
 
-            if (!currentBundleAvailable && currentBundleId.equals(bundle.getId())) {
-                currentBundleAvailable = true;
+                if (!currentBundleAvailable && currentBundleId.equals(bundle.getId())) {
+                    currentBundleAvailable = true;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                bundleFile.delete();
             }
         }
 
