@@ -11,7 +11,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.stage.FileChooser;
-import javafx.util.Callback;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -86,13 +85,13 @@ public class Controller extends PrimaryStageAware implements Initializable {
         }
     }
 
-    public void onDeleteButtonClick(ActionEvent actionEvent) throws IOException, NoSuchAlgorithmException {
+    public void onDeleteButtonClick(ActionEvent actionEvent) throws Exception {
         ModDatabase.getInstance().deleteBundle(modBundlesListView.getSelectionModel().getSelectedItem());
         updateLoadedBundles();
         updateCurrentModBundle();
     }
 
-    public void onLoadButtonClick(ActionEvent actionEvent) throws IOException, NoSuchAlgorithmException {
+    public void onLoadButtonClick(ActionEvent actionEvent) throws Exception {
         ModBundle bundle = modBundlesListView.getSelectionModel().getSelectedItems().get(0);
         boolean isCompatible = ModDatabase.getInstance().isCompatible(bundle.getId());
 
@@ -108,7 +107,7 @@ public class Controller extends PrimaryStageAware implements Initializable {
             alert.getDialogPane().getStylesheets().add(getClass().getResource("/com/timoschwarzer/hkmodinstaller/res/style.css").toExternalForm());
 
             StringBuilder versions = new StringBuilder();
-            for (String version : bundle.getCompatibleVersions().values()) {
+            for (String version : bundle.getGameVersions().values()) {
                 versions.append(version).append("\n");
             }
 
@@ -127,13 +126,13 @@ public class Controller extends PrimaryStageAware implements Initializable {
         }
     }
 
-    public void onUnloadCurrentButtonClick(ActionEvent actionEvent) throws IOException, NoSuchAlgorithmException {
+    public void onUnloadCurrentButtonClick(ActionEvent actionEvent) throws Exception {
         ModDatabase.getInstance().unloadCurrentModBundle();
         updateLoadedBundles();
         updateCurrentModBundle();
     }
 
-    public void onChangeGameLocationButtonClick(ActionEvent actionEvent) throws IOException, NoSuchAlgorithmException {
+    public void onChangeGameLocationButtonClick(ActionEvent actionEvent) throws Exception {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select game assembly");
         fileChooser.getExtensionFilters().setAll(new FileChooser.ExtensionFilter("Assembly-CSharp.dll", "Assembly-CSharp.dll"));
@@ -145,11 +144,11 @@ public class Controller extends PrimaryStageAware implements Initializable {
         }
     }
 
-    private void updateLoadedBundles() throws IOException, NoSuchAlgorithmException {
+    private void updateLoadedBundles() throws Exception {
         modBundlesListView.getItems().setAll(ModDatabase.getInstance().getModBundles());
     }
 
-    private void updateCurrentModBundle() throws IOException, NoSuchAlgorithmException {
+    private void updateCurrentModBundle() throws Exception {
         ModBundle currentModBundle = ModDatabase.getInstance().getCurrentModBundle();
         if (currentModBundle == null) {
             currentModImageView.setImage(new Image(getClass().getResource("/com/timoschwarzer/hkmodinstaller/res/unmodded.jpg").toExternalForm()));
@@ -166,7 +165,7 @@ public class Controller extends PrimaryStageAware implements Initializable {
         }
     }
 
-    private void updateGameInfo() throws IOException, NoSuchAlgorithmException {
+    private void updateGameInfo() throws Exception {
         gameLocationTextField.setText(ModDatabase.getInstance().getOriginalAssembly());
         gameVersionLabel.setText("Game version: " + ModDatabase.getInstance().getGameVersion());
     }

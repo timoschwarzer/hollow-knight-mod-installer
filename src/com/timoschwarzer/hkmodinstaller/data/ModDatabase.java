@@ -3,7 +3,6 @@ package com.timoschwarzer.hkmodinstaller.data;
 import com.timoschwarzer.hkmodinstaller.util.FileUtil;
 import com.timoschwarzer.hkmodinstaller.util.MD5Util;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -21,7 +20,7 @@ import java.util.zip.ZipFile;
 public class ModDatabase {
     private static ModDatabase instance = null;
 
-    public static ModDatabase getInstance() throws IOException, NoSuchAlgorithmException {
+    public static ModDatabase getInstance() throws Exception {
         if (instance == null) {
             instance = new ModDatabase();
         }
@@ -34,7 +33,7 @@ public class ModDatabase {
     private final String originalDirectory;
     private JSONObject configObject;
 
-    private ModDatabase() throws IOException, NoSuchAlgorithmException {
+    private ModDatabase() throws Exception {
         this.dataDirectory = System.getProperty("user.home") + "/.hkmods";
         this.bundlesDirectory = this.dataDirectory + "/bundles";
         this.originalDirectory = this.dataDirectory + "/original";
@@ -67,7 +66,7 @@ public class ModDatabase {
         }
     }
 
-    private void initializeBundles() throws IOException {
+    private void initializeBundles() throws Exception {
         loadedBundles.clear();
         final File[] bundleFiles = new File(this.bundlesDirectory).listFiles((dir, name) -> name.endsWith(".modbundle"));
         assert bundleFiles != null;
@@ -90,12 +89,12 @@ public class ModDatabase {
         }
     }
 
-    public void importBundle(ModBundle bundle) throws IOException, NoSuchAlgorithmException {
+    public void importBundle(ModBundle bundle) throws Exception {
         Files.copy(new File(bundle.getFilename()).toPath(), new File(bundlesDirectory + "/" + bundle.getIdHash() + ".modbundle").toPath(), StandardCopyOption.REPLACE_EXISTING);
         initializeBundles();
     }
 
-    public void deleteBundle(ModBundle bundle) throws NoSuchAlgorithmException, IOException {
+    public void deleteBundle(ModBundle bundle) throws Exception {
         if (getCurrentModBundle() != null && getCurrentModBundle().getId().equals(bundle.getId())) {
             unloadCurrentModBundle();
         }
@@ -171,8 +170,8 @@ public class ModDatabase {
         ModBundle bundle = loadedBundles.get(id);
 
         if (bundle != null) {
-            return bundle.getCompatibleVersions().keySet().contains(configObject.getString("game_version")) ||
-                    bundle.getCompatibleVersions().keySet().contains("any");
+            return bundle.getGameVersions().keySet().contains(configObject.getString("game_version")) ||
+                    bundle.getGameVersions().keySet().contains("any");
         } else {
             return false;
         }

@@ -4,10 +4,8 @@ import com.timoschwarzer.hkmodinstaller.util.MD5Util;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import sun.security.provider.MD5;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +13,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 public class ModBundle {
+    public static final int MODBUNDLE_VERSION = 2;
+
     private String filename;
     private ZipFile zipFile;
     private String id;
@@ -23,18 +23,22 @@ public class ModBundle {
     private String version;
     private String author;
     private ArrayList<SpecialFile> specialFiles = new ArrayList<SpecialFile>();
-    private HashMap<String, String> compatibleVersions = new HashMap<>();
+    private HashMap<String, String> gameVersions = new HashMap<>();
 
-    public ModBundle(String filename) throws IOException {
+    public ModBundle(String filename) throws Exception {
         this.filename = filename;
         zipFile = new ZipFile(filename);
         load();
     }
 
-    private void load() throws IOException {
+    private void load() throws Exception {
         ZipEntry manifest = zipFile.getEntry("mod.json");
 
         JSONObject manifestObject = new JSONObject(IOUtils.toString(zipFile.getInputStream(manifest)));
+
+        if (manifestObject.isNull("modbundle_version") || manifestObject.getInt("modbundle_version") != MODBUNDLE_VERSION) {
+            throw new Exception("The mod bundle you are trying to import is not compatible with this version of the mod installer.");
+        }
 
         this.id = manifestObject.getString("id");
         this.image = IOUtils.toByteArray(zipFile.getInputStream(zipFile.getEntry("icon.png")));
@@ -45,21 +49,22 @@ public class ModBundle {
         zipFile.close();
 
         this.specialFiles.clear();
-        JSONArray specialFilesArray = manifestObject.getJSONArray("special_files");
-        for (int i = 0; i < specialFilesArray.length(); i++) {
-            JSONObject specialFileObject = specialFilesArray.getJSONObject(i);
-            SpecialFile specialFile = new SpecialFile(
-                    specialFileObject.getString("name"),
-                    specialFileObject.getString("target"),
-                    specialFileObject.getString("game_hash")
-            );
-            this.specialFiles.add(specialFile);
-        }
 
-        JSONArray compatibleVersionsArray = manifestObject.getJSONArray("compatible_versions");
-        for (int i = 0; i < compatibleVersionsArray.length(); i++) {
-            JSONObject compatibleVersionObject = compatibleVersionsArray.getJSONObject(i);
-            this.compatibleVersions.put(compatibleVersionObject.getString("hash"), compatibleVersionObject.getString("name"));
+        JSONArray gameVersionsArray = manifestObject.getJSONArray("game_versions");
+        for (int i = 0; i < gameVersionsArray.length(); i++) {
+            JSONObject gameVersionObject = gameVersionsArray.getJSONObject(i);
+            this.gameVersions.put(gameVersionObject.getString("hash"), gameVersionObject.getString("name"));
+
+            JSONArray specialFilesArray = gameVersionObject.getJSONArray("special_files");
+            for (int j = 0; j < specialFilesArray.length(); j++) {
+                JSONObject specialFileObject = specialFilesArray.getJSONObject(j);
+                SpecialFile specialFile = new SpecialFile(
+                        specialFileObject.getString("name"),
+                        specialFileObject.getString("target"),
+                        gameVersionObject.getString("hash")
+                );
+                this.specialFiles.add(specialFile);
+            }
         }
     }
 
@@ -95,7 +100,7 @@ public class ModBundle {
         return specialFiles;
     }
 
-    public HashMap<String, String> getCompatibleVersions() {
-        return compatibleVersions;
+    public HashMap<String, String> getGameVersions() {
+        return gameVersions;
     }
 }
