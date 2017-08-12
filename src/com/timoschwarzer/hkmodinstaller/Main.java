@@ -27,7 +27,9 @@ public class Main extends Application {
         primaryStage.getIcons().add(new Image(getClass().getResource("/com/timoschwarzer/hkmodinstaller/res/icon.ico").toExternalForm()));
         primaryStage.getIcons().add(new Image(getClass().getResource("/com/timoschwarzer/hkmodinstaller/res/icon.png").toExternalForm()));
         primaryStage.setTitle("Hollow Knight Mod Installer v0.3");
-        primaryStage.setResizable(false);
+        primaryStage.setResizable(true);
+        primaryStage.setMinWidth(600);
+        primaryStage.setMinHeight(500);
         Scene scene = new Scene(loader.load(), 600, 500);
         scene.getStylesheets().add(getClass().getResource("/com/timoschwarzer/hkmodinstaller/res/style.css").toExternalForm());
         primaryStage.setScene(scene);
