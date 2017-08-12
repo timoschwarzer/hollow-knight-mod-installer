@@ -19,3 +19,9 @@ If you have further questions ping me @zreshct
 
 The MD5 hashes for the different versions can be found here: https://docs.google.com/spreadsheets/d/1h8MfvkZfoldLjeHrYqTzf12eyvPQlPbpm7pcidXWtNw/edit?usp=sharing
 This list is not complete and you can use the comment feature to add missing hashes. Thanks!
+
+### Credits
+
+- Icon: 753
+- Background image: [Team Cherry](http://teamcherry.com.au)
+- Elevate: [jpassing](https://github.com/jpassing/elevate)
