@@ -1,5 +1,6 @@
 package com.timoschwarzer.hkmodinstaller.controller;
 
+import com.sun.org.apache.xpath.internal.operations.Mod;
 import com.timoschwarzer.hkmodinstaller.cell.BundleListCell;
 import com.timoschwarzer.hkmodinstaller.util.PrimaryStageAware;
 import com.timoschwarzer.hkmodinstaller.data.ModBundle;
@@ -120,14 +121,35 @@ public class Controller extends PrimaryStageAware implements Initializable {
         }
 
         if (isCompatible) {
-            ModDatabase.getInstance().loadModBundle(modBundlesListView.getSelectionModel().getSelectedItems().get(0).getId());
+
+            try {
+                if (ModDatabase.getInstance().canLoadAndUnload(modBundlesListView.getSelectionModel().getSelectedItems().get(0).getId())) {
+                    ModDatabase.getInstance().loadModBundle(modBundlesListView.getSelectionModel().getSelectedItems().get(0).getId());
+                } else {
+                    showErrorAlert("Error", "Can't modify files!\nMake sure your game isn't running or try running with administrative privileges.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                showErrorAlert("Error", "Error while loading mod bundle.\nSee the log for more information.");
+            }
+
             updateLoadedBundles();
             updateCurrentModBundle();
         }
     }
 
     public void onUnloadCurrentButtonClick(ActionEvent actionEvent) throws Exception {
-        ModDatabase.getInstance().unloadCurrentModBundle();
+        try {
+            if (ModDatabase.getInstance().canLoadAndUnload(ModDatabase.getInstance().getCurrentModBundle().getId())) {
+                ModDatabase.getInstance().unloadCurrentModBundle();
+            } else {
+                showErrorAlert("Error", "Can't modify files!\nMake sure your game isn't running or try running with administrative privileges.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            showErrorAlert("Error", "Error while unloading mod bundle.\nSee the log for more information.");
+        }
+
         updateLoadedBundles();
         updateCurrentModBundle();
     }

@@ -112,6 +112,52 @@ public class ModDatabase {
         FileUtils.write(new File(this.dataDirectory + "/config.json"), configObject.toString());
     }
 
+    public boolean canLoadAndUnload(String id) throws IOException {
+        ModBundle bundle = loadedBundles.get(id);
+
+        if (bundle != null) {
+            final String gameDirectory = new File(Paths.get(new File(getOriginalAssembly()).getParent(), "..").toString()).getCanonicalPath();
+            System.out.println("Game directory is: " + gameDirectory);
+
+            ZipFile zipFile = new ZipFile(bundle.getFilename());
+
+            // Extract default files
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+
+                if (entry.getName().startsWith("files/")) {
+                    String relativePath = entry.getName().substring(6);
+
+                    File targetFile = new File(Paths.get(gameDirectory, relativePath).toString());
+
+                    if (!targetFile.canWrite()) {
+                        System.out.println("Can't write to " + targetFile.getAbsolutePath());
+                        return false;
+                    }
+                }
+            }
+
+            // Extract special files
+            for (SpecialFile specialFile : bundle.getSpecialFiles()) {
+                if (specialFile.getTargetGameHash().equals(configObject.getString("game_version"))) {
+                    File targetFile = new File(Paths.get(gameDirectory, specialFile.getTargetFileName()).toString());
+
+                    if (!targetFile.canWrite()) {
+                        System.out.println("Can't write to " + targetFile.getAbsolutePath());
+                        return false;
+                    }
+                }
+            }
+
+            zipFile.close();
+
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public void unloadCurrentModBundle() throws IOException {
         ModBundle bundle = getCurrentModBundle();
 
@@ -133,11 +179,12 @@ public class ModDatabase {
                     if (targetFile.exists() && !targetFile.isDirectory()) {
 
                         // Restore original files and delete additional files
+                        targetFile.delete();
+
                         if (new File(Paths.get(originalDirectory, relativePath).toString()).exists()) {
-                            Files.move(Paths.get(originalDirectory, relativePath), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                            FileUtils.moveFile(new File(Paths.get(originalDirectory, relativePath).toString()), targetFile);
                             System.out.println("Restored: " + targetFile.toString());
                         } else {
-                            targetFile.delete();
                             System.out.println("Deleted:  " + targetFile.toString());
                         }
                     }
@@ -153,11 +200,12 @@ public class ModDatabase {
                     if (targetFile.exists() && !targetFile.isDirectory()) {
 
                         // Restore original files and delete additional files
+                        targetFile.delete();
+
                         if (new File(Paths.get(originalDirectory, specialFile.getTargetFileName()).toString()).exists()) {
-                            Files.move(Paths.get(originalDirectory, specialFile.getTargetFileName()), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                            FileUtils.moveFile(new File(Paths.get(originalDirectory, specialFile.getTargetFileName()).toString()), targetFile);
                             System.out.println("Restored: " + targetFile.toString());
                         } else {
-                            targetFile.delete();
                             System.out.println("Deleted:  " + targetFile.toString());
                         }
                     }
