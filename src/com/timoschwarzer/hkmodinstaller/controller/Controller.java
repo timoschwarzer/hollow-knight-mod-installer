@@ -1,6 +1,5 @@
 package com.timoschwarzer.hkmodinstaller.controller;
 
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import com.timoschwarzer.hkmodinstaller.cell.BundleListCell;
 import com.timoschwarzer.hkmodinstaller.util.PrimaryStageAware;
 import com.timoschwarzer.hkmodinstaller.data.ModBundle;
@@ -17,9 +16,12 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.security.NoSuchAlgorithmException;
 import java.util.ResourceBundle;
 
+/**
+ * The container for application elements and initialization.
+ *
+ */
 public class Controller extends PrimaryStageAware implements Initializable {
     public Button loadButton;
     public TextField gameLocationTextField;

@@ -4,13 +4,21 @@ import com.timoschwarzer.hkmodinstaller.controller.BundleListCellController;
 import com.timoschwarzer.hkmodinstaller.data.ModBundle;
 import com.timoschwarzer.hkmodinstaller.data.ModDatabase;
 import com.timoschwarzer.hkmodinstaller.util.ControllerAwareFXMLLoader;
+import com.timoschwarzer.hkmodinstaller.util.ControllerAwareFXMLLoader.ControllerAwareFXMLLoaderResult;
 import javafx.scene.control.ListCell;
 
 import java.io.IOException;
 import java.net.URL;
 
+/**
+ * A custom ListCell to display ModBundles in the application
+ */
 public class BundleListCell extends ListCell<ModBundle> {
-    ControllerAwareFXMLLoader.ControllerAwareFXMLLoaderResult<BundleListCellController> ui;
+
+    /**
+     * Provides UI details to the cell, for use by the Controller
+     */
+    ControllerAwareFXMLLoaderResult<BundleListCellController> ui;
 
     public BundleListCell() throws IOException {
         ui = (new ControllerAwareFXMLLoader<BundleListCellController>()).load(new URL(getClass().getResource("/com/timoschwarzer/hkmodinstaller/fx/bundle_list_cell.fxml").toExternalForm()));

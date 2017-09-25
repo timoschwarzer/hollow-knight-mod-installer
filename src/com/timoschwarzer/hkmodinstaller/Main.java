@@ -7,6 +7,10 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+/**
+ * The class responsible for initializing the controller
+ * and executing the functions of the mod loader.
+ */
 public class Main extends Application {
 
     @Override

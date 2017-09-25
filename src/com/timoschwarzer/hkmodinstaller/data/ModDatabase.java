@@ -7,6 +7,7 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -20,6 +21,14 @@ import java.util.zip.ZipFile;
 public class ModDatabase {
     private static ModDatabase instance = null;
 
+    /**
+     * A singular static instance of ModDatabase decreases
+     * overhead and streamlines implementation in the Controller.
+     * It also prevents concurrency issues which might arise from
+     * misuse.
+     *
+     * @return the sole instance of the ModDatabase class
+     */
     public static ModDatabase getInstance() throws Exception {
         if (instance == null) {
             instance = new ModDatabase();
@@ -38,9 +47,10 @@ public class ModDatabase {
         this.bundlesDirectory = this.dataDirectory + "/bundles";
         this.originalDirectory = this.dataDirectory + "/original";
 
+        // Load or create config file
         final File configFile = new File(this.dataDirectory + "/config.json");
         if (configFile.exists()) {
-            configObject = new JSONObject(FileUtils.readFileToString(configFile));
+            configObject = new JSONObject(FileUtils.readFileToString(configFile, StandardCharsets.UTF_8));
         } else {
             configObject = new JSONObject();
             configObject.put("current_bundle", JSONObject.NULL);
@@ -66,6 +76,11 @@ public class ModDatabase {
         }
     }
 
+    /**
+     * Initialize or reinitialize all ModBundles at instantiation or upon update
+     *
+     * @throws Exception for any failure in iteration over bundleFiles
+     */
     private void initializeBundles() throws Exception {
         loadedBundles.clear();
         final File[] bundleFiles = new File(this.bundlesDirectory).listFiles((dir, name) -> name.endsWith(".modbundle"));
@@ -94,11 +109,23 @@ public class ModDatabase {
         }
     }
 
+    /**
+     * Adds and initializes the given ModBundle
+     *
+     * @param bundle the ModBundle
+     * @throws Exception for IOException in Files.copy() or Exception in initializeBundles()
+     */
     public void importBundle(ModBundle bundle) throws Exception {
         Files.copy(new File(bundle.getFilename()).toPath(), new File(bundlesDirectory + "/" + bundle.getIdHash() + ".modbundle").toPath(), StandardCopyOption.REPLACE_EXISTING);
         initializeBundles();
     }
 
+    /**
+     * Unloads the given ModBundle if it matches the current one.
+     *
+     * @param bundle the ModBundle in question to be deleted
+     * @throws Exception for IOException in unloadCurrentModBundle() or Exception in initializeBundles()
+     */
     public void deleteBundle(ModBundle bundle) throws Exception {
         if (getCurrentModBundle() != null && getCurrentModBundle().getId().equals(bundle.getId())) {
             unloadCurrentModBundle();
@@ -108,10 +135,20 @@ public class ModDatabase {
         initializeBundles();
     }
 
+
+    /** Save the ModDatabase's current config */
     private void saveConfig() throws IOException {
-        FileUtils.write(new File(this.dataDirectory + "/config.json"), configObject.toString());
+        FileUtils.writeStringToFile(new File(this.dataDirectory + "/config.json"), configObject.toString(), StandardCharsets.UTF_8);
     }
 
+    /**
+     * Iterates over the contents of a bundle, given by its ID, to
+     * determine whether each ZipEntry may be written by the database.
+     *
+     * @param id of the bundle to be tested
+     * @return whether the bundle with the given id is loadable and unloadable
+     * @throws IOException for any failure in reading or writing the file
+     */
     public boolean canLoadAndUnload(String id) throws IOException {
         ModBundle bundle = loadedBundles.get(id);
 
@@ -158,6 +195,11 @@ public class ModDatabase {
         }
     }
 
+    /**
+     * Commits all entries of the current mod bundle to the game directory.
+     *
+     * @throws IOException for any failure in reading or writing the file
+     */
     public void unloadCurrentModBundle() throws IOException {
         ModBundle bundle = getCurrentModBundle();
 
@@ -219,6 +261,10 @@ public class ModDatabase {
         }
     }
 
+    /**
+     * @param id of the desired ModBundle
+     * @return whether the ModBundle exists and is compatible with the game version
+     */
     public boolean isCompatible(String id) {
         ModBundle bundle = loadedBundles.get(id);
 
@@ -230,6 +276,13 @@ public class ModDatabase {
         }
     }
 
+    /**
+     * Load a ModBundle from the given ID
+     *
+     * @param id of the desired ModBundle
+     * @throws IOException for any failure in reading or writing the file, including those thrown by MD5Util
+     * @throws NoSuchAlgorithmException if an error occurs in MD5Util
+     */
     public void loadModBundle(String id) throws IOException, NoSuchAlgorithmException {
         ModBundle bundle = loadedBundles.get(id);
 
@@ -304,18 +357,28 @@ public class ModDatabase {
         }
     }
 
+    /** @return the collection of all ModBundles loaded */
     public Collection<ModBundle> getModBundles() {
         return loadedBundles.values();
     }
 
+    /** @return the ModBundle whose ID matches the one given */
     public ModBundle getModBundle(String id) {
         return loadedBundles.get(id);
     }
 
+    /** @return the current ModBundle as given by the database config */
     public ModBundle getCurrentModBundle() {
         return configObject.isNull("current_bundle") ? null : getModBundle(configObject.getString("current_bundle"));
     }
 
+    /**
+     * Set the path to Assembly-CSharp.dll, and modify the game version accordingly
+     *
+     * @param path the location of the game assembly
+     * @throws IOException for any failure by FileUtils or saveConfig
+     * @throws NoSuchAlgorithmException for problems with MD5Util
+     */
     public void setOriginalAssembly(String path) throws IOException, NoSuchAlgorithmException {
         configObject.put("original_assembly", path);
         configObject.put("game_version", MD5Util.hashFile(path));
@@ -323,10 +386,12 @@ public class ModDatabase {
         saveConfig();
     }
 
+    /** @return the path to Assembly-CSharp.dll */
     public String getOriginalAssembly() {
         return configObject.isNull("original_assembly") ? null : configObject.getString("original_assembly");
     }
 
+    /** @return the game version hash of the original assembly */
     public String getGameVersion() {
         return configObject.isNull("game_version") ? "---" : configObject.getString("game_version");
     }
