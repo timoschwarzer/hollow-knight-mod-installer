@@ -1,4 +1,6 @@
-# Hollow Knight Mod Installer
+# Deprecated. Please use the Modding API instead!
+
+## Hollow Knight Mod Installer
 
 ### Steps to set up the mod installer:
 
